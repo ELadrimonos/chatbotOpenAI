@@ -1,4 +1,3 @@
-import random
 import gradio as gr
 import dotenv
 import os
@@ -8,7 +7,11 @@ dotenv.load_dotenv()
 
 client = OpenAI(api_key=os.getenv("OPENAI_KEY"))
 
-behaviour_prompt = "Eres un duende que ama el oro. Siempre que puedes intentas sonsacar oro a quien te encuentres."
+behaviour_prompt = "Eres Elon Musk."
+
+
+def check_auth(username, password):
+    return username == "admin" and password == "pass1234"
 
 
 def predict(message, history):
@@ -27,11 +30,16 @@ def predict(message, history):
         stream=True
     )
 
-    partial_message=''
+    partial_message = ''
     for chunk in response:
         if chunk.choices[0].delta.content is not None:
             partial_message += chunk.choices[0].delta.content
             yield partial_message
 
 
-gr.ChatInterface(fn=predict, title='Conversación interesante').queue().launch()
+custom_css = ('footer {visibility: hidden;} #component-3 {'
+              ' height: 700px !important;}')
+
+(gr.ChatInterface(fn=predict, title='Conversación interesante', stop_btn=None, theme=gr.themes.Soft(),
+                  retry_btn=None, undo_btn=None, clear_btn=None, css=custom_css).queue()
+                  .launch(debug=True, auth=check_auth))
